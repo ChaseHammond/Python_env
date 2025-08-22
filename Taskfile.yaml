@@ -29,6 +29,10 @@ tasks:
           errors+="pytest is required. Install with 'uv add pytest' or in pyproject.toml.\n"
         fi
 
+        if ! command -v task >/dev/null 2>&1; then
+          errors+="Taskfile is required. Install: https://taskfile.dev/getting-started/#installation\n"
+        fi
+
         if [ -n "$errors" ]; then
           echo -e "$errors"
           exit 1
