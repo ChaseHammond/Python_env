@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Environment files
+.env
+*.env
+
+# Task scratch dir
+scratch/
+
+# Coverage / test files
+.coverage
+.pytest_cache/
+
+# IDE / Editor
+.vscode/
+.idea/
+.DS_Store
