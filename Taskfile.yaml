@@ -61,13 +61,17 @@ tasks:
     silent: true
     cmds:
       - |
-        echo "Enter your project name:"
-        read project_name
-
+        # Auto-detect repo name and suggest default project name
+        repo_name=$(basename "$(git rev-parse --show-toplevel)")
+        default_project_name=$(echo "$repo_name" | sed -E 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++){ $i=toupper(substr($i,1,1)) substr($i,2) } print}')
+        echo "Enter project name [default: $default_project_name]:"
+        read input
+        project_name=${input:-$default_project_name}
         safe_name=$(echo "$project_name" | tr '[:upper:] ' '[:lower:]_')
-
+  
         echo "Creating project: $project_name ($safe_name)"
-
+  
+        # Create project folder
         if [ ! -d "./$safe_name" ]; then
           mkdir "./$safe_name"
           echo "print('Hello from $project_name!')" > "./$safe_name/__init__.py"
@@ -75,10 +79,29 @@ tasks:
         else
           echo "Project folder $safe_name already exists"
         fi
-
+  
+        # Update README.md
         sed -i.bak "1s/.*/# $project_name/" README.md && rm README.md.bak
         echo "Updated README.md"
-
+  
+        # Create .env if missing
+        if [ ! -f ".env" ]; then
+          touch .env
+          echo "# Environment variables for $project_name" > .env
+          echo ".env created"
+        else
+          echo ".env already exists"
+        fi
+  
+        # Create scratch/ folder
+        if [ ! -d "scratch" ]; then
+          mkdir scratch
+          echo "scratch/ directory created"
+        else
+          echo "scratch/ directory already exists"
+        fi
+  
+        # Create Python virtual environment
         uv venv --python 3.13 .venv
         echo "source .venv/bin/activate" > activate.sh
         chmod +x activate.sh
