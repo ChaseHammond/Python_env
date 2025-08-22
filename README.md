@@ -26,13 +26,20 @@ Click **"Use this template"** to create your own repo with this setup.
    git clone https://github.com/<your-username>/<your-new-project>
    cd <your-new-project>
    ```
-3. **Run setup Tasks**
+3. **Start venv**
+   ```bash
+   source .venv/bin/activate
+   ```
+4. **Install**
+   ```
+   Ensure you enstall these tools:
+   TaskFile: https://taskfile.dev/docs/getting-started#installation
+   UV: https://docs.astral.sh/uv/getting-started/installation/
+   ```
+5. **Run setup Tasks**
    ```bash
    task setup     # create files (.env, README.md, scratch/)
    task init      # name your project, create venv
    task install   # install dependencies + pre-commit hooks
    ```
-4. **Activate Your Environment**
-   ```bash
-   source activate.sh
-   ```
+
