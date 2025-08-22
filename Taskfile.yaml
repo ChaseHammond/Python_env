@@ -1,0 +1,103 @@
+version: '3'
+
+tasks:
+
+  setup:
+    desc: Setup local environment
+    deps: [check-tools, create-files]
+
+  install:
+    desc: Install dev dependencies & pre-commit hooks
+    cmds:
+      - uv sync
+      - pre-commit install
+      - echo "Development environment ready!"
+
+  check-tools:
+    desc: Checks that tools are installed
+    silent: true
+    cmds: 
+      - |
+        errors=""
+        if ! command -v uv >/dev/null 2>&1; then
+          errors+="uv is required. Please install it: https://docs.astral.sh/uv/getting-started/installation/.\n"
+        fi
+        if ! command -v pre-commit >/dev/null 2>&1; then
+          errors+="pre-commit is required. Install with 'uv tool install pre-commit'.\n"
+        fi
+        if ! command -v pytest >/dev/null 2>&1; then
+          errors+="pytest is required. Install with 'uv add pytest' or in pyproject.toml.\n"
+        fi
+
+        if [ -n "$errors" ]; then
+          echo -e "$errors"
+          exit 1
+        fi
+
+  create-files:
+    desc: Creates necessary files (README.md, scratch/, .env)
+    silent: true
+    cmds: 
+      - |
+        if [ ! -f ./README.md ]; then
+          echo "# New Project" > README.md
+          echo "README.md created"
+        fi
+
+        if [ ! -d ./scratch ]; then
+          mkdir scratch/
+          echo "./scratch directory created"
+        fi
+
+        if [ ! -f ./.env ]; then
+          touch .env
+          echo ".env file created"
+        fi
+
+        echo "created all necessary files"
+  
+  init:
+    desc: Initialize project (get name, create venv, updated README)
+    silent: true
+    cmds:
+      - |
+        echo "Enter your project name:"
+        read project_name
+
+        safe_name=$(echo "$project_name" | tr '[:upper:] ' '[:lower:]_')
+
+        echo "Creating project: $project_name ($safe_name)"
+
+        if [ ! -d "./$safe_name" ]; then
+          mkdir "./$safe_name"
+          echo "print('Hello from $project_name!')" > "./$safe_name/__init__.py"
+          echo "Project folder $safe_name created"
+        else
+          echo "Project folder $safe_name already exists"
+        fi
+
+        sed -i.bak "1s/.*/# $project_name/" README.md && rm README.md.bak
+        echo "Updated README.md"
+
+        uv venv --python 3.13 .venv
+        echo "source .venv/bin/activate" > activate.sh
+        chmod +x activate.sh
+        echo "Virtual environment created (.venv)"
+        echo "Run 'source activate.sh' to activate"
+
+  add-test:
+    desc: Create pytest file for given Python module
+    cmds:
+      - |
+        file=$1
+        test_file="test_$(basename $file)"
+        if [ ! -f "./tests/$test_file" ]; then
+          mkdir -p tests
+          echo "import pytest" > "tests/$test_file"
+          echo "" >> "tests/$test_file"
+          echo "def test_placeholder():" >> "tests/$test_file"
+          echo "    assert True" >> "tests/$test_file"
+          echo "Created tests/$test_file"
+        else
+          echo "Test file already exists: tests/$test_file"
+        fi
